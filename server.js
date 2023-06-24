@@ -23,7 +23,7 @@ connectDB();
 
 const app = express();
 
-const whiteList = ['http://localhost:5173', "https://stripe.com"];
+const whiteList = ['http://localhost:5173', "https://stripe.com", "https://zawiyah-frontend.onrender.com/"];
 
 const corsOptions = {
     origin: whiteList,
