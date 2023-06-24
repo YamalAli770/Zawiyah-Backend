@@ -24,7 +24,7 @@ connectDB();
 const app = express();
 
 const corsOptions = {
-    origin: '*',
+    origin: 'https://zawiyah-frontend.onrender.com',
     credentials: true,
 }
 
