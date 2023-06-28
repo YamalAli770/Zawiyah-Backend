@@ -62,8 +62,8 @@ app.post("/api/create-checkout-session", verifyJWT, async (req, res) => {
     payment_method_types: ["card"], 
     line_items: lineItems,
     mode: "payment", 
-    success_url: "https://zawiyah-frontend.onrender.com/success", 
-    cancel_url: "https://zawiyah-frontend.onrender.com/cancel", 
+    success_url: "https://zawiyah.netlify.app/success", 
+    cancel_url: "https://zawiyah.netlify.app/cancel", 
   }); 
   res.json({ id: session.id }); 
 }); 
