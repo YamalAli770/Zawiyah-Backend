@@ -24,7 +24,7 @@ connectDB();
 const app = express();
 
 const corsOptions = {
-    origin: 'https://zawiyah-frontend.onrender.com',
+    origin: 'https://zawiyah.netlify.app',
     credentials: true,
 }
 
