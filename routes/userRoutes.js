@@ -1,5 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const User = require('../models/User');
+const Product = require('../models/Product');
+const Bid = require('../models/Bid');
+const Cart = require('../models/Cart');
 
 const { getAllUsers, getMe, getUserByUsername } = require('../controller/userController');
 

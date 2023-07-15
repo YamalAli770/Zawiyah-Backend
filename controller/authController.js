@@ -33,6 +33,8 @@ const registerUser = asyncHandler(async (req, res) => {
       res.status(201).json(newUser);
     }
   }
+  res.status(400);
+  throw new Error("Registeration Unsuccessful");
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -60,6 +62,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const accessToken = jwt.sign(
       {
         userDetails: {
+          id: userExists._id,
           username: userExists.username,
           accountType: userExists.accountType,
         },
@@ -70,13 +73,14 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const refreshToken = jwt.sign(
       {
+        id: userExists._id,
         username: userExists.username,
       },
       process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "1d" }
     );
 
-    // Storing Refresh Token In DB
+    // Storing Refresh Token In D
     userExists.refreshToken = refreshToken;
     const result = await userExists.save();
 

@@ -26,45 +26,19 @@ const getAllProducts = asyncHandler(async (req, res) => {
 const createProduct = asyncHandler(async (req, res) => {
   const { username, accountType } = req.user;
 
-  const { name, brand, category, description, initialPrice } = req.body;
+  const { name, brand, category, description, initialPrice, image } = req.body;
 
-  if(accountType !== "seller" && accountType !== "Seller") {
+  const lowerCaseAccountType = accountType.toLowerCase();
+
+  if(lowerCaseAccountType !== "seller") {
     res.status(403).json({ message: "You are not authorized to create a product" });
     return;
   };
 
-  if (!name || !brand || !category || !description || !initialPrice ) {
+  if (!name || !brand || !category || !description || !initialPrice || !image ) {
     res.status(400).json({ message: "Provide all required fields." });
     return;
   };
-
-  if (!req.files || !req.files.image) {
-    res.status(400).json({ message: "Image file is required" });
-    return;
-  }
-
-  const image = req.files.image;
-
-  // Check if the file is in PNG or JPG format
-  if (!['image/png', 'image/jpeg'].includes(image.mimetype)) {
-    res.status(400).json({ message: "Only PNG and JPG images are allowed" });
-    return;
-  }
-
-  const timestamp = Date.now();
-  const randomString = Math.random().toString(36).substring(2, 8);
-  const fileExtension = image.name.split('.').pop();
-  const newFileName = `${timestamp}-${randomString}.${fileExtension}`;
-  const imagePath = `public/uploads/${newFileName}`;
-
-  // Move the uploaded file to the specified path
-  try {
-    await image.mv(imagePath);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to upload image" });
-    return;
-  }
 
   const user = await User.findOne({ username: username });
 
@@ -75,7 +49,7 @@ const createProduct = asyncHandler(async (req, res) => {
     initialPrice,
     description,
     currentPrice: initialPrice,
-    image: imagePath,
+    image,
     productListedBy: user._id,
     ...req.body,
   });
@@ -93,9 +67,11 @@ const createProduct = asyncHandler(async (req, res) => {
 const updateProduct = asyncHandler(async (req, res) => {
   const { accountType } = req.user;
 
+  const lowerCaseAccountType = accountType.toLowerCase();
+
   const id = req.params.id;
 
-  if(accountType !== "seller") {
+  if(lowerCaseAccountType !== "seller") {
     res.status(403).json({ message: "You are not authorized to modify a product" });
     return;
   };
@@ -124,9 +100,11 @@ const updateProduct = asyncHandler(async (req, res) => {
 const deleteProduct = asyncHandler(async (req, res) => {
   const { accountType } = req.user;
 
+  const lowerCaseAccountType = accountType.toLowerCase();
+
   const id = req.params.id;
 
-  if(accountType !== "seller" || accountType !== "Seller") {
+  if(lowerCaseAccountType !== "seller") {
     res.status(403).json({ message: "You are not authorized to delete a product" });
     return;
   };

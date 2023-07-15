@@ -14,6 +14,7 @@ const verifyJWT = asyncHandler(async(req, res, next) => {
             throw new Error("User Unauthorized, Token Not Valid")
         }
         req.user = {
+            id: decoded.userDetails.id,
             username: decoded.userDetails.username,
             accountType: decoded.userDetails.accountType
         };
