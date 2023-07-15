@@ -25,7 +25,7 @@ const app = express();
 const server = http.createServer(app);
 
 const corsOptions = {
-    origin: ['https://zawiyah.netlify.app', 'http://localhost:5173', 'http://127.0.0.1:5173','http://172.19.251.43:32082/'],
+    origin: ['https://zawiyah.netlify.app', 'http://localhost:5173', 'http://127.0.0.1:5173','http://172.19.251.43:32082/', 'https://zawiyah-frontend.onrender.com/'],
     credentials: true,
 }
 
