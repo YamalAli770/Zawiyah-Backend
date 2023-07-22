@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 
+// ! Register User
+
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, password, accountType } = req.body;
   if (!username || !email || !password || !accountType) {
@@ -37,6 +39,8 @@ const registerUser = asyncHandler(async (req, res) => {
   throw new Error("Registeration Unsuccessful");
 });
 
+// ! Login User
+
 const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -50,6 +54,16 @@ const loginUser = asyncHandler(async (req, res) => {
     res.status(400);
     throw new Error("Cannot Find User With The Provided Email");
   }
+
+  // if(userExists.activeSessionToken) {
+  //   const invalidatedUser = await invalidateSession(userExists.activeSessionToken);
+
+  //   if(!invalidatedUser) {
+  //     res.status(400);
+  //     throw new Error("Error while invalidating session.");
+  //   }
+  // }
+
   const comparePassword = await bcrypt.compare(
     req.body.password,
     userExists.password
@@ -82,6 +96,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     // Storing Refresh Token In D
     userExists.refreshToken = refreshToken;
+    // userExists.activeSessionToken = refreshToken;
     const result = await userExists.save();
 
     const { password, ...other } = userExists._doc;
@@ -103,6 +118,8 @@ const loginUser = asyncHandler(async (req, res) => {
   }
 });
 
+// ! Logout User
+
 const logoutUser = asyncHandler(async (req, res) => {
   const cookies = req.cookies;
   if (!cookies?.jwt) {
@@ -117,6 +134,13 @@ const logoutUser = asyncHandler(async (req, res) => {
     return res.sendStatus(204);
   }
 
+  // const invalidatedUser = await invalidateSession(refreshToken);
+
+  // if (!invalidatedUser) {
+  //   res.status(400);
+  //   throw new Error("Error while invalidating session.");
+  // }
+  
   // Delete Refresh Token From DB
   const updatedUser = await userExists.updateOne({
     $set: { refreshToken: "" },
@@ -124,6 +148,48 @@ const logoutUser = asyncHandler(async (req, res) => {
   res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true }); // secure-true
   return res.sendStatus(204);
 });
+
+
+// ! Refresh Access Token
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+  const refreshToken = req.cookies.jwt;
+  console.log(refreshToken);
+
+  if(!refreshToken) {
+    res.status(401);
+    throw new Error("Refresh Token Not Found");
+  }
+
+  const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+  const user = await User.findById(decoded.id);
+
+    // Check if the user exists and has the same activeSessionToken
+  if (!user || user.refreshToken !== refreshToken) {
+    res.status(403);
+    throw new Error("Invalid refresh token");
+  }
+
+  // Generate a new access token
+  const accessToken = jwt.sign(
+    {
+      userDetails: {
+      id: user._id,
+      username: user.username,
+      accountType: user.accountType,
+    },
+    },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "30m" }
+    );
+
+    console.log("Access Token:", accessToken);
+    // Return the new access token
+    res.status(200).json({ accessToken });
+});
+
+// ! Get User Details
 
 const getMe = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -144,13 +210,31 @@ const getMe = asyncHandler(async (req, res) => {
   }
 });
 
+// ! Get All Users
+
 const getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.find();
   res.status(200).json(users);
 });
 
+// const invalidateSession = asyncHandler(async (token) => {
+//   const user = await User.findOneAndUpdate(
+//     { activeSessionToken: token },
+//     { $set: { activeSessionToken: "", refreshToken: "" } },
+//     { new: true }
+//   );
+
+//   if (!user) {
+//     return null;
+//   }
+
+//   return user;
+// });
+
+
 module.exports = {
   registerUser,
   loginUser,
   logoutUser,
+  refreshAccessToken
 };
