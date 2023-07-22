@@ -41,6 +41,11 @@ const getCartProducts = asyncHandler(async (req, res) => {
 const addItemToCart = asyncHandler(async (req, res) => {
   const { id, productId } = req.body;
 
+  if(!id || !productId) {
+    res.status(400);
+    throw new Error("The required information aren't provided.")
+  }
+
   Product.verifyId(productId);
 
   const cart = await Cart.findOne({ cartOwner: id });
@@ -56,11 +61,8 @@ const addItemToCart = asyncHandler(async (req, res) => {
   } else {
     // Check if the product is already in the cart
     if (cart.cartItems.includes(productId)) {
-      res.status(200);
-      const cartTotal = await calculateCartTotal(cart.cartItems);
-      cart.cartTotal = cartTotal;
-      await cart.save();
-      return res.json(cart);
+      res.status(409);
+      throw new Error("Product already in cart");
     }
 
     // Add the product to the existing cart

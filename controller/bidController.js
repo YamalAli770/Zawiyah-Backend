@@ -54,7 +54,7 @@ const createBid = asyncHandler(async (req, res) => {
     };
 
     // Check if bid amount is greater than current price
-    if(bidAmount <= product.currentPrice) {
+    if(bidAmount <= product.price) {
         res.status(400);
         throw new Error("Bid Amount Should Be Greater Than Current Price");
     }
@@ -67,7 +67,7 @@ const createBid = asyncHandler(async (req, res) => {
         existingBid.bidAmount = bidAmount;
         await existingBid.save();
 
-        product.currentPrice = bidAmount;
+        product.price = bidAmount;
         await product.save();
 
         io.emit("newBid", { bid: existingBid });
@@ -83,7 +83,7 @@ const createBid = asyncHandler(async (req, res) => {
 
         await bid.save();
 
-        product.currentPrice = bidAmount;
+        product.price = bidAmount;
 
         user.productsBidOn.push(product._id);
 
@@ -96,6 +96,71 @@ const createBid = asyncHandler(async (req, res) => {
     }
 });
 
+// Update a bid
+const updateBid = asyncHandler(async (req, res) => {
+    const bidId = req.params.id;
+    const { bidAmount } = req.body;
+    
+    Bid.verifyId(bidId);
+    
+    const bid = await Bid.findById(bidId);
+    
+    if(!bid) {
+        res.status(404);
+        throw new Error("Bid Not Found");
+    }
+    
+    const product = await Product.findById(bid.bidOn);
+    
+    // Check if bidding time is valid
+    if(!isBiddingTimeValid(product)) {
+        res.status(400);
+        throw new Error("Bidding Time Is Over");
+    }
+    
+    // Check if bid amount is greater than current price
+    if(bidAmount <= product.price) {
+        res.status(400);
+        throw new Error("Bid Amount Should Be Greater Than Current Price");
+    }
+    
+    bid.bidAmount = bidAmount;
+    await bid.save();
+    
+    product.price = bidAmount;
+    await product.save();
+    
+    res.status(200).json(bid);
+});
+
+// Delete a bid
+const deleteBid = asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    
+    Bid.verifyId(id);
+    const bid = await Bid.findById(id);
+    
+    if(!bid) {
+        res.status(404);
+        throw new Error("Bid Not Found");
+    }
+    
+    await Bid.deleteOne(bid);
+    
+    res.send("Bid Deleted Successfully");
+});
+
+const deleteAllBids = asyncHandler(async (req, res) => {
+    const bids = await Bid.deleteMany({});
+    res.json(bids);
+});
+
+function isBiddingTimeValid(product) {
+    const currentTime = new Date();
+    const biddingEndTime = product.createdAt.getTime() + (1 * 24 * 60 * 60 * 1000);
+    return currentTime <= biddingEndTime;
+}
+
 const getHighestBidOnProduct = asyncHandler(async(req, res) => {
     const productId = req.params.id;
 
@@ -107,7 +172,7 @@ const getHighestBidOnProduct = asyncHandler(async(req, res) => {
         throw new Error("Product Not Found");
     }
 
-    if(!product.finalPrice) {
+    if(isBiddingTimeValid(product)) {
         res.status(400);
         throw new Error("Bidding Time Isn't Over Yet");
     };
@@ -122,77 +187,12 @@ const getHighestBidOnProduct = asyncHandler(async(req, res) => {
     res.status(200).json(bid);
 });
 
-// Update a bid
-const updateBid = asyncHandler(async (req, res) => {
-    const bidId = req.params.id;
-    const { bidAmount } = req.body;
-
-    Bid.verifyId(bidId);
-
-    const bid = await Bid.findById(bidId);
-
-    if(!bid) {
-        res.status(404);
-        throw new Error("Bid Not Found");
-    }
-
-    const product = await Product.findById(bid.bidOn);
-
-    // Check if bidding time is valid
-    if(!isBiddingTimeValid(product)) {
-        res.status(400);
-        throw new Error("Bidding Time Is Over");
-    }
-
-    // Check if bid amount is greater than current price
-    if(bidAmount <= product.currentPrice) {
-        res.status(400);
-        throw new Error("Bid Amount Should Be Greater Than Current Price");
-    }
-
-    bid.bidAmount = bidAmount;
-    await bid.save();
-
-    product.currentPrice = bidAmount;
-    await product.save();
-
-    res.status(200).json(bid);
-});
-
-// Delete a bid
-const deleteBid = asyncHandler(async (req, res) => {
-    const id = req.params.id;
-
-    Bid.verifyId(id);
-    const bid = await Bid.findById(id);
-
-    if(!bid) {
-        res.status(404);
-        throw new Error("Bid Not Found");
-    }
-
-    await Bid.deleteOne(bid);
-
-    res.send("Bid Deleted Successfully");
-});
-
-const deleteAllBids = asyncHandler(async (req, res) => {
-    const bids = await Bid.deleteMany({});
-    res.json(bids);
-});
-
-function isBiddingTimeValid(product) {
-    const currentTime = new Date();
-    const biddingEndTime = product.createdAt.getTime() + (1 * 24 * 60 * 60 * 1000);
-    return currentTime <= biddingEndTime;
-  }
-
 module.exports = {
     getAllBids,
-    createBid,
-    getHighestBidOnProduct,
     getBid,
+    createBid,
     updateBid,
     deleteBid,
-    deleteAllBids
+    deleteAllBids,
+    getHighestBidOnProduct
 }

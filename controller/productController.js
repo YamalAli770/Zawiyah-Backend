@@ -48,7 +48,7 @@ const createProduct = asyncHandler(async (req, res) => {
     category,
     initialPrice,
     description,
-    currentPrice: initialPrice,
+    price: initialPrice,
     image,
     productListedBy: user._id,
     ...req.body,
