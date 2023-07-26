@@ -166,7 +166,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   const user = await User.findById(decoded.id);
 
     // Check if the user exists and has the same activeSessionToken
-  if (!user || user.refreshToken !== refreshToken) {
+  if (!user) {
     res.status(403);
     throw new Error("Invalid refresh token");
   }

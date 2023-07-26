@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 
 const verifyJWT = asyncHandler(async(req, res, next) => {
-    const authHeader = req.body.headers.authorization || req.body.headers.Authorization;
+    const authHeader = req.headers.authorization || req.headers.Authorization;
     if(!authHeader?.startsWith('Bearer ')) {
         res.status(401);
         throw new Error("Cannot Authorize User, No Token")

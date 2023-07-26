@@ -15,8 +15,6 @@ const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const fileUpload = require('express-fileupload');
 
-const verifyJWT = require('./middleware/verifyJWT');
-
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 connectDB();
