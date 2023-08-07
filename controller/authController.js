@@ -82,7 +82,7 @@ const loginUser = asyncHandler(async (req, res) => {
         },
       },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "30m" }
+      { expiresIn: "2m" }
     );
 
     const refreshToken = jwt.sign(
@@ -154,7 +154,6 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const refreshToken = req.cookies.jwt;
-  console.log(refreshToken);
 
   if(!refreshToken) {
     res.status(401);
@@ -181,10 +180,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     },
     },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "30m" }
+      { expiresIn: "2m" }
     );
 
-    console.log("Access Token:", accessToken);
     // Return the new access token
     res.status(200).json({ accessToken });
 });

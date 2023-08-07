@@ -39,7 +39,6 @@ const createBid = asyncHandler(async (req, res) => {
     const user = await User.findOne({ username });
     Product.verifyId(bidOn);
 
-    
     const product = await Product.findById(bidOn);
 
     if(!product) {

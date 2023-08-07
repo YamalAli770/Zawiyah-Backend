@@ -13,6 +13,6 @@ router.post('/login', loginUser);
 router.get('/logout', logoutUser);
 
 // Refresh Access Token
-router.post('/refresh-token', verifyJWT, refreshAccessToken);
+router.get('/refresh-token', refreshAccessToken);
 
 module.exports = router;
