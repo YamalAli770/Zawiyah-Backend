@@ -3,7 +3,6 @@ const asyncHandler = require('express-async-handler');
 
 const verifyJWT = asyncHandler(async(req, res, next) => {
     const authHeader = req.headers.authorization || req.headers.Authorization;
-    // console.log(authHeader);
     if(!authHeader?.startsWith('Bearer ')) {
         res.status(401);
         throw new Error("Cannot Authorize User, No Token")

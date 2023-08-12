@@ -43,22 +43,11 @@ const ProductSchema = mongoose.Schema({
 }, { timestamps: true });
 
 ProductSchema.statics.verifyId = function (id, req, res) {
+    console.log(id);
     if (!mongoose.Types.ObjectId.isValid(id)) {
         res.status(400);
         throw new Error("The Id Provided Is Not Valid");
     }
 };
-
-ProductSchema.pre('save', function(next) {
-    const now = new Date();
-    const listingDate = this.createdAt;
-    const oneDaysInMillis = 24 * 60 * 60 * 1000; // 1 days in milliseconds
-  
-    if (now - listingDate >= oneDaysInMillis) {
-      this.finalPrice = this.currentPrice;
-    }
-  
-    next();
-  });
 
 module.exports = mongoose.model("Product", ProductSchema);

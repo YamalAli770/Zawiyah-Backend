@@ -55,15 +55,6 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new Error("Cannot Find User With The Provided Email");
   }
 
-  // if(userExists.activeSessionToken) {
-  //   const invalidatedUser = await invalidateSession(userExists.activeSessionToken);
-
-  //   if(!invalidatedUser) {
-  //     res.status(400);
-  //     throw new Error("Error while invalidating session.");
-  //   }
-  // }
-
   const comparePassword = await bcrypt.compare(
     req.body.password,
     userExists.password
