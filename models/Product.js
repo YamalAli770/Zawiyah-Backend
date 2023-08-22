@@ -39,6 +39,10 @@ const ProductSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
+    },
+    isSold: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true });
 

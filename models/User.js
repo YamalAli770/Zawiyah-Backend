@@ -28,9 +28,17 @@ const UserSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'
     }],
+    placedOrders: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Order'
+    }],
     refreshToken: {
         type: String,
     },
+    isAdmin: {
+        type: String,
+        default: false
+    }
 }, { timestamps: true });
 
 UserSchema.statics.verifyId = function (id, req, res) {

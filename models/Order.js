@@ -10,13 +10,59 @@ const OrderSchema = mongoose.Schema({
         type: Number,
         required: true,
     },
+    orderDetails: {
+        firstName: {
+            type: String,
+            required: true,
+        },
+        lastName: {
+            type: String,
+            required: true,
+        },
+        address: {
+            type: String,
+            required: true,
+        },
+        apartment: {
+            type: String,
+        },
+        city: {
+            type: String,
+            required: true,
+        },
+        country: {
+            type: String,
+            required: true,
+        },
+        state: {
+            type: String,
+            required: true,
+        },
+        postalCode: {
+            type: String,
+            required: true,
+        },
+        phoneNumber: {
+            type: String,
+            required: true,
+            length: 11,
+        },
+        deliveryMethod: {
+            type: String,
+            required: true,
+        },
+        paymentMethod: {
+            type: String,
+            required: true,
+        },
+    },
     orderStatus: {
         type: String,
-        required: true,
-        default: 'pending'
+        default: 'Order Placed'
     },
     orderPlacedBy: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true,
     },
 }, { timestamps: true });

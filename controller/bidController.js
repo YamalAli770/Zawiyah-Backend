@@ -6,7 +6,15 @@ const { getIO } = require("../config/socket");
 
 // Get all bids
 const getAllBids = asyncHandler(async (req, res) => {
-    const bids = await Bid.find();
+    const bids = await Bid.find()
+        .populate("bidBy", "username")
+        .populate("bidOn", "name");
+
+    if(!bids || bids.length === 0) {
+        res.status(404);
+        throw new Error("No Bids Found");
+    }
+
     res.json(bids);
 });
 

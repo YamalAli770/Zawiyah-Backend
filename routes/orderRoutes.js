@@ -4,15 +4,18 @@ const router = express.Router();
 const { getAllOrders, getOrderById, createOrder, updateOrder, deleteOrder } = require('../controller/orderController');
 
 const verifyJWT = require('../middleware/verifyJWT');
-
-router.get('/', verifyJWT, getAllOrders);
+const verifyAdmin = require('../middleware/verifyAdmin');
 
 router.get('/:id', verifyJWT, getOrderById);
 
 router.post('/create', verifyJWT, createOrder);
 
-router.put('/update', verifyJWT, updateOrder);
+// ! Admin Routes
 
-router.delete('/delete', verifyJWT, deleteOrder);
+router.get('/', verifyAdmin, getAllOrders);
+
+router.put('/update', verifyAdmin, updateOrder);
+
+router.delete('/delete', verifyAdmin, deleteOrder);
 
 module.exports = router;

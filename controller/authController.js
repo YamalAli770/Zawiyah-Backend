@@ -70,6 +70,7 @@ const loginUser = asyncHandler(async (req, res) => {
           id: userExists._id,
           username: userExists.username,
           accountType: userExists.accountType,
+          isAdmin: userExists.isAdmin
         },
       },
       process.env.ACCESS_TOKEN_SECRET,
@@ -95,8 +96,11 @@ const loginUser = asyncHandler(async (req, res) => {
     // Create user cart if not exists
     const cartExists = await Cart.findOne({ cartOwner: userExists._id });
 
-    if (userExists.accountType === "buyer" || userExists.accountType === "Buyer" && !cartExists) {
-      const newCart = await Cart.create({ cartOwner: userExists._id });
+    if (userExists.accountType === "buyer" || userExists.accountType === "Buyer") {
+      if(!cartExists) {
+        const newCart = await Cart.create({ cartOwner: userExists._id });
+        console.log(newCart);
+      }
     };
 
     // HTTP Cookie
@@ -168,6 +172,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       id: user._id,
       username: user.username,
       accountType: user.accountType,
+      isAdmin: user.isAdmin
     },
     },
       process.env.ACCESS_TOKEN_SECRET,
@@ -220,10 +225,78 @@ const getAllUsers = asyncHandler(async (req, res) => {
 //   return user;
 // });
 
+const loginAdmin = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    res.status(400);
+    throw new Error("Provide All Required Fields");
+  }
+
+  const userExists = await User.findOne({ email: req.body.email });
+
+  if (!userExists) {
+    res.status(400);
+    throw new Error("Cannot Find User With The Provided Email");
+  }
+
+
+  if(userExists.isAdmin === "false") {
+    res.status(401);
+    throw new Error("Unauthorized Access");
+  }
+
+  const comparePassword = await bcrypt.compare(
+    req.body.password,
+    userExists.password
+  );
+  if (!comparePassword) {
+    res.status(400);
+    throw new Error("Wrong Password");
+  } else {
+    // Creating JWTS
+    const accessToken = jwt.sign(
+      {
+        userDetails: {
+          id: userExists._id,
+          username: userExists.username,
+          accountType: userExists.accountType,
+          isAdmin: userExists.isAdmin
+        },
+      },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: "2m" }
+    );
+
+    const refreshToken = jwt.sign(
+      {
+        id: userExists._id,
+        username: userExists.username,
+      },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    // Storing Refresh Token In D
+    userExists.refreshToken = refreshToken;
+    // userExists.activeSessionToken = refreshToken;
+    const result = await userExists.save();
+
+    const { password, ...other } = userExists._doc;
+
+    // HTTP Cookie
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
+    res.status(200).json({ ...other, accessToken });
+  }
+});
 
 module.exports = {
   registerUser,
   loginUser,
   logoutUser,
-  refreshAccessToken
+  refreshAccessToken,
+  loginAdmin
 };

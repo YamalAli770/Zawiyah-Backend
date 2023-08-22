@@ -3,6 +3,18 @@ const Cart = require("../models/Cart");
 const User = require("../models/User");
 const Product = require("../models/Product");
 
+// Get All Carts
+const getAllCarts = asyncHandler(async (req, res) => {
+  const carts = await Cart.find({}).populate('cartItems');
+
+  if(!carts) {
+    res.status(404);
+    throw new Error("Carts not found");
+  };
+  
+  res.json(carts);
+});
+
 // Get cart by user ID
 const getCartByUserId = asyncHandler(async (req, res) => {
   const id = req.params.id;
@@ -148,4 +160,5 @@ module.exports = {
   addItemToCart,
   removeItemFromCart,
   clearCart,
+  getAllCarts
 };

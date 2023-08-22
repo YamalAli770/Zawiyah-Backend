@@ -13,6 +13,7 @@ const userRoutes = require('./routes/userRoutes');
 const bidRoutes = require('./routes/bidRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+
 const fileUpload = require('express-fileupload');
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
@@ -39,7 +40,7 @@ app.use(cors(corsOptions));
 // Socket.io
 initSocket(server, corsOptions);
 
-// Routes
+// User Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/products', productRoutes);
