@@ -55,6 +55,11 @@ const loginUser = asyncHandler(async (req, res) => {
     throw new Error("Cannot Find User With The Provided Email");
   }
 
+  if(userExists.isAdmin === "true") {
+    res.status(401);
+    throw new Error("Unauthorized Access");
+  };
+
   const comparePassword = await bcrypt.compare(
     req.body.password,
     userExists.password
@@ -94,9 +99,10 @@ const loginUser = asyncHandler(async (req, res) => {
     const { password, ...other } = userExists._doc;
 
     // Create user cart if not exists
-    const cartExists = await Cart.findOne({ cartOwner: userExists._id });
 
     if (userExists.accountType === "buyer" || userExists.accountType === "Buyer") {
+      const cartExists = await Cart.findOne({ cartOwner: userExists._id });
+      
       if(!cartExists) {
         const newCart = await Cart.create({ cartOwner: userExists._id });
         console.log(newCart);
@@ -149,6 +155,8 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const refreshToken = req.cookies.jwt;
+
+  console.log(refreshToken);
 
   if(!refreshToken) {
     res.status(401);
